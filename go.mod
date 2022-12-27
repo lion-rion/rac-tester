@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/manifoldco/promptui v0.9.0
 	github.com/spf13/cobra v1.6.1
+	google.golang.org/protobuf v1.28.1
 )
 
 require (
