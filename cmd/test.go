@@ -15,25 +15,19 @@ import (
 // testCmd represents the test command
 var testCmd = &cobra.Command{
 	Use:   "test",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "test command",
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		//get flag value
 		sim, _ := cmd.Flags().GetBool("sim")
 		printAa("test.txt")
 		prompt := promptui.Select{
 			Label:     "where test?",
-			Items:     []string{"kick"},
+			Items:     []string{"kick", "wheel", "spinner"},
 			CursorPos: 0,
 		}
-		idx, result, err := prompt.Run() //入力を受け取る
+		idx, _, err := prompt.Run() //入力を受け取る
 		if err != nil {
-			fmt.Println(result)
 			fmt.Println(err)
 			return
 		}
@@ -41,17 +35,13 @@ to quickly create a Cobra application.`,
 		case 0:
 			KickTest(sim)
 		case 1:
-			fmt.Println("Kanji")
+			WheelTest(sim)
 		case 2:
-			fmt.Println("Shadow")
+			SpinTest(sim)
 		default:
 		}
 
 	},
-}
-
-func main() {
-
 }
 
 func init() {
@@ -67,8 +57,4 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// testCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-}
-
-func getRobotid() {
-
 }
