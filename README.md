@@ -13,7 +13,11 @@ This is a test program for grism and real machine for [Robocup ssl](https://ssl.
 
 ## Features
 
-This tester is under development...
+RAC-TESTER is CLI tool using [cobra](https://github.com/spf13/cobra) and [promptui](github.com/manifoldco/promptui).
+
+You can test ssl robot with using TUI. 
+
+<img width="543" alt="スクリーンショット 2022-12-29 4 21 16" src="https://user-images.githubusercontent.com/79553411/209862078-2f0eef2d-36f8-4318-b160-1a198d36a928.png">
 
 ## Usage
 
@@ -31,10 +35,22 @@ if you use simulator, use --sim flag.
 ./rac-test test --sim
 ```
 
+### Flags
+
+`test` : Use test mode
+
+`--sim` : Use simulator or not
+
+More may be added in the future...
+
 
 ## Related
 
+- [cobra](https://github.com/spf13/cobra) - CLI
+- [promptui](github.com/manifoldco/promptui) - TUI
 - [grSim](https://github.com/RoboCup-SSL/grSim) - Simulator
+- [SSL](https://ssl.robocup.org/) - Robocup Small Size League
+
 
 ## Author
 
