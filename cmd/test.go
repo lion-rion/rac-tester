@@ -12,7 +12,6 @@ import (
 )
 
 /*グローバル変数*/
-
 // testCmd represents the test command
 var testCmd = &cobra.Command{
 	Use:   "test",
@@ -24,10 +23,12 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		//get flag value
+		sim, _ := cmd.Flags().GetBool("sim")
 		printAa("test.txt")
 		prompt := promptui.Select{
 			Label:     "where test?",
-			Items:     []string{"kick", "wheel", "spinner"},
+			Items:     []string{"kick"},
 			CursorPos: 0,
 		}
 		idx, result, err := prompt.Run() //入力を受け取る
@@ -38,7 +39,7 @@ to quickly create a Cobra application.`,
 		}
 		switch idx {
 		case 0:
-			KickTest()
+			KickTest(sim)
 		case 1:
 			fmt.Println("Kanji")
 		case 2:
@@ -55,6 +56,7 @@ func main() {
 
 func init() {
 	rootCmd.AddCommand(testCmd)
+	testCmd.Flags().Bool("sim", false, "Use simulator")
 
 	// Here you will define your flags and configuration settings.
 
