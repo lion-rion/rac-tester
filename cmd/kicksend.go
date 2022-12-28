@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"rac-tester/proto/pb_gen"
@@ -12,35 +13,70 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-func KickTest() {
-	prompt := promptui.Select{
-		Label:     "which robot?",
-		Items:     []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"},
-		CursorPos: 0,
+func KickTest(isSim bool) {
+
+	var id int
+
+	validate := func(input string) error {
+		_, err := strconv.ParseFloat(input, 64)
+		if err != nil {
+			return errors.New("RobotID must be 0-11")
+		}
+		id, _ = strconv.Atoi(input)
+		if id < 12 && id >= 0 {
+		} else {
+			return errors.New("RobotID must be 0-11")
+		}
+		return nil
 	}
-	id, result, err := prompt.Run() //入力を受け取る
+
+	templates := &promptui.PromptTemplates{
+		Prompt:  "{{ . | bold }} ",
+		Valid:   "{{ . | bold | green }} ",
+		Invalid: "{{ . | bold |red }} ",
+		Success: "{{ . | bold | green }} ",
+	}
+
+	prompt := promptui.Prompt{
+		Label:     "RobotID",
+		Templates: templates,
+		Validate:  validate,
+	}
+
+	result, err := prompt.Run()
 	if err != nil {
 		fmt.Println(result)
 		fmt.Println(err)
 		return
 	}
+	if isSim {
+		SendCommnad(uint32(id), isSim)
+	} else {
+		SendCommnad(uint32(id), isSim)
+	}
 
-	SendCommnad(uint32(id))
 	for {
-		fmt.Printf("again? (y/n): ")
-		var input string
-		fmt.Scanln(&input)
-		if input == "y" || input == "Y" {
-			SendCommnad(uint32(id))
+		prompt := promptui.Select{
+			Label:     "Again?",
+			Items:     []string{"Yes", "No"},
+			CursorPos: 0,
+		}
+		idx, _, err := prompt.Run() //入力を受け取る
+
+		if idx == 0 {
+			SendCommnad(uint32(id), isSim)
 		} else {
 			break
 		}
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 	}
-
 	return //ここで終了
 }
 
-func SendCommnad(robotid uint32) {
+func SendCommnad(robotid uint32, isSim bool) {
 
 	var kickspeedx float32 = 1
 	var kickspeedz float32 = 0
@@ -50,15 +86,25 @@ func SendCommnad(robotid uint32) {
 	var spinner bool = false
 	var wheelsspeed bool = false
 
-	ipv4 := "192.168.0." + strconv.Itoa(int(robotid)+100)
-	port := "20011"
-	addr := ipv4 + ":" + port
-	//conn, err := net.Dial("udp4", "127.0.0.1:20106")
+	var ipv4 string
+	var port string
+	var addr string
+	if isSim {
+		ipv4 = "127.0.0.1"
+		port = "20106"
+		addr = ipv4 + ":" + port
+	} else {
+		ipv4 = "192.168.0." + strconv.Itoa(int(robotid)+100)
+		port = "20011"
+		addr = ipv4 + ":" + port
+	}
+
 	conn, err := net.Dial("udp4", addr)
+	defer conn.Close()
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("countdown")
+	fmt.Println("CountDown...")
 	fmt.Println(3)
 	time.Sleep(1 * time.Second)
 	fmt.Println(2)
@@ -101,8 +147,5 @@ func SendCommnad(robotid uint32) {
 
 	}
 
-	Stop(robotid)
-
-	return
-
+	Stop(robotid, conn)
 }
