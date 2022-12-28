@@ -3,14 +3,10 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"net"
-	"rac-tester/proto/pb_gen"
-	pb "rac-tester/proto/pb_gen"
+	"rac-tester/tool"
 	"strconv"
-	"time"
 
 	"github.com/manifoldco/promptui"
-	"google.golang.org/protobuf/proto"
 )
 
 func KickTest(isSim bool) {
@@ -44,16 +40,22 @@ func KickTest(isSim bool) {
 	}
 
 	result, err := prompt.Run()
+
+	cmd := tool.Commad{
+		Id:         uint32(id),
+		Kickspeedx: 1,
+		IsSim:      isSim,
+		Loop:       100,
+	}
+
+	//result2, err := prompt2.Run()
 	if err != nil {
 		fmt.Println(result)
 		fmt.Println(err)
 		return
 	}
-	if isSim {
-		SendCommnad(uint32(id), isSim)
-	} else {
-		SendCommnad(uint32(id), isSim)
-	}
+
+	tool.SendCmd(cmd)
 
 	for {
 		prompt := promptui.Select{
@@ -64,7 +66,7 @@ func KickTest(isSim bool) {
 		idx, _, err := prompt.Run() //入力を受け取る
 
 		if idx == 0 {
-			SendCommnad(uint32(id), isSim)
+			tool.SendCmd(cmd)
 		} else {
 			break
 		}
@@ -74,78 +76,4 @@ func KickTest(isSim bool) {
 		}
 	}
 	return //ここで終了
-}
-
-func SendCommnad(robotid uint32, isSim bool) {
-
-	var kickspeedx float32 = 1
-	var kickspeedz float32 = 0
-	var veltangent float32 = 0
-	var velnormal float32 = 0
-	var velangular float32 = 0
-	var spinner bool = false
-	var wheelsspeed bool = false
-
-	var ipv4 string
-	var port string
-	var addr string
-	if isSim {
-		ipv4 = "127.0.0.1"
-		port = "20106"
-		addr = ipv4 + ":" + port
-	} else {
-		ipv4 = "192.168.0." + strconv.Itoa(int(robotid)+100)
-		port = "20011"
-		addr = ipv4 + ":" + port
-	}
-
-	conn, err := net.Dial("udp4", addr)
-	defer conn.Close()
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("CountDown...")
-	fmt.Println(3)
-	time.Sleep(1 * time.Second)
-	fmt.Println(2)
-	time.Sleep(1 * time.Second)
-	fmt.Println(1)
-	time.Sleep(1 * time.Second)
-
-	for i := 0; i < 100; i++ {
-		pe := &pb.GrSim_Robot_Command{
-			Id:          &robotid,
-			Kickspeedx:  &kickspeedx,
-			Kickspeedz:  &kickspeedz,
-			Veltangent:  &veltangent,
-			Velnormal:   &velnormal,
-			Velangular:  &velangular,
-			Spinner:     &spinner,
-			Wheelsspeed: &wheelsspeed,
-		}
-
-		var timestamp float64 = float64(time.Now().UnixNano() / 1e6)
-		var isteamyellow bool = false
-
-		command := &pb.GrSim_Commands{
-			Timestamp:     &timestamp,
-			Isteamyellow:  &isteamyellow,
-			RobotCommands: []*pb.GrSim_Robot_Command{pe},
-		}
-		packet := &pb_gen.GrSim_Packet{
-			Commands: command,
-		}
-		marshalpacket, _ := proto.Marshal(packet)
-		//println(marshalpacket)
-
-		_, err = conn.Write([]byte(marshalpacket))
-		//:debug println("send : %v", marshalpacket)
-		if err != nil {
-			panic(err)
-		}
-		time.Sleep(3 * time.Millisecond)
-
-	}
-
-	Stop(robotid, conn)
 }
