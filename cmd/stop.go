@@ -4,13 +4,12 @@ import (
 	"net"
 	"rac-tester/proto/pb_gen"
 	pb "rac-tester/proto/pb_gen"
-	"strconv"
 	"time"
 
 	"google.golang.org/protobuf/proto"
 )
 
-func Stop(robotid uint32) {
+func Stop(robotid uint32, conn net.Conn) {
 
 	var kickspeedx float32 = 0
 	var kickspeedz float32 = 0
@@ -20,13 +19,6 @@ func Stop(robotid uint32) {
 	var spinner bool = false
 	var wheelsspeed bool = false
 
-	ipv4 := "192.168.0." + strconv.Itoa(int(robotid)+100)
-	port := "20011"
-	addr := ipv4 + ":" + port
-	conn, err := net.Dial("udp4", addr)
-	if err != nil {
-		panic(err)
-	}
 	for i := 0; i < 100; i++ {
 
 		pe := &pb.GrSim_Robot_Command{
@@ -54,7 +46,7 @@ func Stop(robotid uint32) {
 		marshalpacket, _ := proto.Marshal(packet)
 		//println(marshalpacket)
 
-		_, err = conn.Write([]byte(marshalpacket))
+		_, err := conn.Write([]byte(marshalpacket))
 		//:debug println("send : %v", marshalpacket)
 		if err != nil {
 			panic(err)
